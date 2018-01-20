@@ -1,19 +1,19 @@
 import React from 'react';
 import axios, { post } from 'axios';
-import { connect, sendMessage } from '../socketHelpers';
+import { connect, sendMessage, sendTypingState, sendCurrentWorkSpace } from '../socketHelpers';
 import { Input, Button, Popover, PopoverHeader, PopoverBody } from 'reactstrap';
 import NavBar from './NavBar.jsx';
 import MessageList from './MessageList.jsx';
 import Body from './Body.jsx';
 import SendFiles from './SendFiles.jsx';
+import UserTypingNotification from './UserTypingNotification.jsx';
 
-//The main component of the App. Renders the core functionality of the project.
+// The main component of the App. Renders the core functionality of the project.
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      file: null,
-      //Default message informs the user to select a workspace
+      // Default message informs the user to select a workspace
       messages: [
         {
           text: 'Welcome to slackk-casa! Please select or create a workspace!',
@@ -25,26 +25,34 @@ export default class App extends React.Component {
       ],
       users: [],
       workSpaces: [],
+      file: null,
       query: '',
       currentWorkSpaceId: 0,
       currentWorkSpaceName: '',
+      currentlyTyping: false,
+      typingUser: null,
     };
+
+    this.timer = null;
+    
+    this.updateWorkSpaces = this.updateWorkSpaces.bind(this);
+    this.handleFileSubmit = this.handleFileSubmit.bind(this);
+    this.handleFileChange = this.handleFileChange.bind(this);
   }
 
   componentDidMount() {
-    let server = location.origin.replace(/^http/, 'ws');
-
+    const server = location.origin.replace(/^http/, 'ws');
     // connect to the websocket server
     connect(server, this);
   }
 
   handleFileChange(e) {
-    this.setState({file: e.target.files[0]});
+    this.setState({ file: e.target.files[0] });
   }
 
   handleFileSubmit(event) {
     event.preventDefault();
-    let { file } = this.state;
+    const { file } = this.state;
     this.fileUpload(file)
       .then((response) => {
         console.log('success!');
@@ -53,25 +61,51 @@ export default class App extends React.Component {
           text: response.data,
           workspaceId: this.state.currentWorkSpaceId,
         });
-      })
+      });
   }
+
   // fileUpload function thanks to Ashik Nesin: https://github.com/AshikNesin/axios-fileupload
   fileUpload(file) {
    const url = '/upload';
    const formData = new FormData();
-   formData.append('file',file)
+   formData.append('file', file);
    const config = {
-       headers: {
-           'content-type': 'multipart/form-data'
-       }
+    headers: {
+      'content-type': 'multipart/form-data'
+    }
    }
    return post(url, formData, config)
  }
-  // changes the query state based on user input in text field
+ 
+  turnOffTyping() {
+    sendTypingState({
+      username: this.props.location.state.username,
+      currentlyTyping: false,
+      workspaceId: this.state.currentWorkSpaceId,
+    });
+    this.setState({ currentlyTyping: false });
+  }
+
+  // Handle changes to current query value and currentlyTyping 
   handleChange(event) {
+    // clear any timers set reset currentlyTyping
+    clearTimeout(this.timer);
+    // if not already typing, send change to server
+    if (!this.state.currentlyTyping) {
+      sendTypingState({
+        username: this.props.location.state.username,
+        currentlyTyping: true,
+        workspaceId: this.state.currentWorkSpaceId,
+      });
+    }
+    // changes the query state based on user input in text field
+    // sets user as currently typing
     this.setState({
       query: event.target.value,
+      currentlyTyping: true,
     });
+    // set a timer to reset currentlyTyping back to false.
+    this.timer = setTimeout(this.turnOffTyping.bind(this), 8000);
   }
 
   // sends message on enter key pressed and clears form
@@ -88,10 +122,12 @@ export default class App extends React.Component {
         workspaceMembers: [],
 
       });
-      // resets text box to blank string
+      // resets text box and currentlyTyping data
       this.setState({
         query: '',
+        currentlyTyping: false,
       });
+      this.timer = null;
     }
   }
 
@@ -99,45 +135,71 @@ export default class App extends React.Component {
   loadWorkSpaces() {
     fetch('/workspaces')
       .then(resp => resp.json())
-      .then(workSpaces => this.setState({ workSpaces }))
+      .then((workSpaces) => { this.updateWorkSpaces(workSpaces); })
       .catch(console.error);
   }
 
-
+  updateWorkSpaces(workSpaces) {
+    this.setState({ workSpaces });
+  }
 
   // Helper function to reassign current workspace
   changeCurrentWorkSpace(id, name) {
-    this.setState({ currentWorkSpaceId: id, currentWorkSpaceName: name });
-
+    // update current workspace state for dropdown menu
     axios.get(`/workspaces/${id}/members`)
-      .then(data => this.setState({ workspaceMembers: data.data }))
+      .then(data => this.setState({ workspaceMembers: data.data }));
+      
+    // inform server of workspace change
+    const workSpaceData = {
+      currentWorkSpaceId: id,
+      currentWorkSpaceName: name,
+      username: this.props.location.state.username,
+      typingUser: null,
+    };
+    sendCurrentWorkSpace(workSpaceData);
+
+    this.setState(workSpaceData);
   }
+
   // renders nav bar, body(which contains all message components other than input), and message input
   render() {
     const {
-      messages, query, workSpaces,
-      currentWorkSpaceId, currentWorkSpaceName, workspaceMembers
+      messages, query, workSpaces, currentWorkSpaceId, 
+      currentWorkSpaceName, workspaceMembers, typingUser
     } = this.state;
+
+    const { username } = this.props.location.state;
+
+    const userTypingNotification = typingUser !== null ? 
+      <UserTypingNotification typingUser={typingUser} /> : ' ';
+
+
     return (
       <div className="app-container">
         <NavBar
           currentWorkSpaceName={currentWorkSpaceName}
           currentWorkSpaceId={currentWorkSpaceId}
-          currentUser={this.props.location.state.username}
+          currentUser={username}
           workspaceMembers={workspaceMembers}
         />
         <Body
           messages={messages}
           workSpaces={workSpaces}
-          loadWorkSpaces={() => this.loadWorkSpaces()}
+          updateWorkSpaces={this.updateWorkSpaces}
           changeCurrentWorkSpace={(id, name) => this.changeCurrentWorkSpace(id, name)}
           currentWorkSpaceId={currentWorkSpaceId}
-          currentUser={this.props.location.state.username}
+          currentUser={username}
+          typingUser={typingUser}
           workspaceMembers={workspaceMembers}
         />
+        <div className="console-container">
+          <SendFiles
+            fileSubmit={this.handleFileSubmit}
+            change={this.handleFileChange}
+          />
+          <UserTypingNotification typingUser={typingUser} />
+        </div>
         <div className="input-container">
-          <SendFiles fileSubmit={this.handleFileSubmit.bind(this)} change={this.handleFileChange.bind(this)}/>
-
           <Input
             value={query}
             className="message-input-box"

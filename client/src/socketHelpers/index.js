@@ -1,3 +1,7 @@
+import { setTimeout } from 'timers';
+
+const { incomingMessageNotification } = require('./../helpers.js');
+
 let ws = null;
 let app = null;
 let sent = false;
@@ -28,19 +32,58 @@ const setUsers = (users) => {
   app.setState({ users });
 };
 
-// takes in a parameter and sends that parameter to the socket server
+// updates App currentlyTyping state depending on whether user is typing.
+const setTypingUser = (user) => {
+  app.setState({
+    typingUser: user.currentlyTyping ? user.username : null,
+  });
+};
+
+// takes in a message parameter and sends that parameter to the socket server
 const sendMessage = (data) => {
+  const {
+    username, text, workspaceId, isImage,
+  } = data;
+  
   const msg = {
     method: 'POSTMESSAGE',
     data: {
-      username: data.username,
-      text: data.text,
-      workspaceId: data.workspaceId,
-      isImage: data.isImage
+      username,
+      text,
+      workspaceId,
+      isImage,
     },
   };
   oneup.play();
   sent = true;
+  ws.send(JSON.stringify(msg));
+};
+
+// takes a parameter with user information incuding whether user is typing, and sends that paramter to socket server.
+const sendTypingState = (data) => {
+  const { username, currentlyTyping, workspaceId } = data;
+  const msg = {
+    method: 'SENDTYPINGSTATE',
+    data: {
+      username,
+      currentlyTyping,
+      workspaceId,
+    },
+  };
+  ws.send(JSON.stringify(msg));
+};
+
+// takes a parameter with users' current work space, and sends that paramter to socket server.
+const sendCurrentWorkSpace = (data) => {
+  const { currentWorkSpaceId, currentWorkSpaceName, username } = data;
+  const msg = {
+    method: 'SENDWORKSPACE',
+    data: {
+      username,
+      currentWorkSpaceId,
+      currentWorkSpaceName,
+    },
+  };
   ws.send(JSON.stringify(msg));
 };
 
@@ -50,7 +93,8 @@ const getWorkSpaceMessagesFromServer = (id) => {
   ws.send(JSON.stringify(msg));
 };
 
-// takes in all new messages and filters and concats messages that match the current workSpace
+// takes in new messages and filters and concats messages that match the current workSpace
+// resets typing user state
 const filterMsgByWorkSpace = (msg) => {
   if (sent) {
     sent = false;
@@ -58,23 +102,10 @@ const filterMsgByWorkSpace = (msg) => {
     beep.play();
   }
   if (msg.workspaceId === app.state.currentWorkSpaceId) {
-    app.setState({ messages: [...app.state.messages, msg.message] });
-  }
-};
-
-// Takes in NEWMESSAGE data and then creates a notification.
-const incomingMessageNotification = (data) => {
-  const { Notification } = window;
-  // Checks if browser has permission to display notifications
-  if (!('Notification' in window)) {
-    console.log('This browser does not support desktop notification');
-  } else if (Notification.permission !== 'denied' && Notification.permission !== 'granted') {
-    Notification.requestPermission();
-  // If permission is granted, create a message notification.
-  } else if (Notification.permission === 'granted') {
-    const { username, text } = data.message;
-    const workspaceName = app.state.workSpaces.filter(workspace => workspace.id === data.workspaceId)[0].name;
-    return new Notification(`New message from ${username} in #${workspaceName}: ${text}`);
+    app.setState({ 
+      messages: [...app.state.messages, msg.message],
+      typingUser: null,
+    });
   }
 };
 
@@ -108,6 +139,19 @@ const afterConnect = () => {
       case 'POSTMESSAGE':
         addNewMessage(data);
         break;
+      case 'SENDWORKSPACE':
+        if (code !== 201) {
+          console.log('Error! Server did not log current workspace. You should still be able to send messages.');
+        }
+        break;
+      case 'SENDTYPINGSTATE':
+        if (code !== 201) {
+          console.log('Error! Server did not recognize client\'s typing state change');
+        }
+        break;
+      case 'USERCHANGEDTYPINGSTATE':
+        setTypingUser(data);
+        break;
       default:
     }
   };
@@ -134,4 +178,12 @@ const connect = (server, component) => {
   });
 };
 
-module.exports = { connect, sendMessage, afterConnect, getWorkSpaceMessagesFromServer, incomingMessageNotification };
+export {
+  connect,
+  sendMessage,
+  afterConnect,
+  getWorkSpaceMessagesFromServer,
+  incomingMessageNotification,
+  sendTypingState,
+  sendCurrentWorkSpace,
+};

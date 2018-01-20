@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
-const server = require('../server');
+const server = require('../server/index');
 
 chai.use(chaiHttp);
 
@@ -84,6 +84,19 @@ describe('Static Files', () => {
         .send(JSON.stringify({ name: 'ws_test123' }))
         .end((err, res) => {
           expect(res).to.have.status(201);
+          done();
+        });
+    }).timeout(1000);
+    it('should respond with updated list of workspaces.', (done) => {
+      chai
+        .request(server)
+        .post('/workspaces')
+        .type('application/JSON')
+        .send(JSON.stringify({ name: 'ws_test321' }))
+        .end((err, res) => {
+          const body = res.json();
+          expect(body).to.be.an('array');
+          expect(body[0]).to.be.an('object');
           done();
         });
     }).timeout(1000);

@@ -29,6 +29,15 @@
   overflow: scroll;
 }
 
+/* div container holds sendFiles button and user typing notifications */
+.console-container {
+  margin-left: 17%;
+}
+
+.user-typing-notification {
+  margin-left: 3%;
+}
+
 /* send message div container */
 .input-container {
   height: 25vh;

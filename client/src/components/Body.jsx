@@ -14,22 +14,25 @@ export default class Body extends React.Component {
   }
 
   render() {
-    let {
+    const {
       workSpaces,
       messages,
-      loadWorkSpaces,
       changeCurrentWorkSpace,
       currentWorkSpaceId,
       currentUser,
       workspaceMembers,
+      updateWorkSpaces,
+      typingUser,
     } = this.props;
+
+
     return (
       <Container fluid>
         <Row>
           <Col className="side-bar-col" xs="2">
             <WorkSpaceList
               workSpaces={workSpaces}
-              loadWorkSpaces={loadWorkSpaces}
+              updateWorkSpaces={updateWorkSpaces}
               changeCurrentWorkSpace={changeCurrentWorkSpace}
               currentWorkSpaceId={currentWorkSpaceId}
               currentUser={currentUser}
@@ -37,23 +40,22 @@ export default class Body extends React.Component {
           </Col>
           <Col className="message-list-col" xs="10">
             <div
-
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: '100%',
-             }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                height: '100%',
+              }}
             >
-            <WorkspaceMenu
-              currentWorkSpaceId={currentWorkSpaceId}
-              currentUser={currentUser}
-              workspaceMembers={workspaceMembers}
-            />
-            <MessageList
-              messages={messages}
-              currentWorkSpaceId={currentWorkSpaceId}
-            />
+              <WorkspaceMenu
+                currentWorkSpaceId={currentWorkSpaceId}
+                currentUser={currentUser}
+                workspaceMembers={workspaceMembers}
+              />
+              <MessageList
+                messages={messages}
+                currentWorkSpaceId={currentWorkSpaceId}
+              />
             </div>
           </Col>
         </Row>
