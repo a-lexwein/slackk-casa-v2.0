@@ -189,7 +189,6 @@ export default class App extends React.Component {
           messages={messages}
           workSpaces={workSpaces}
           updateWorkSpaces={this.updateWorkSpaces}
-          loadWorkSpaces={this.loadWorkSpaces}
           changeCurrentWorkSpace={(id, name) => this.changeCurrentWorkSpace(id, name)}
           currentWorkSpaceId={currentWorkSpaceId}
           currentUser={username}

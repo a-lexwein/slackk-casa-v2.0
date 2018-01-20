@@ -36,7 +36,7 @@ export default class WorkSpaceList extends Component {
   }
   //posts the query to the server that results in a success or failed creation
   createWorkSpace(isPrivate = false) {
-    const { updateWorkSpaces, loadWorkSpaces, currentUser } = this.props;
+    const { updateWorkSpaces, currentUser } = this.props;
     console.log('updateWorkSpaces: ', updateWorkSpaces);
     let { workSpaceQuery, createFail } = this.state;
     this.setState({ createFail: false });
@@ -47,10 +47,9 @@ export default class WorkSpaceList extends Component {
         headers: { 'content-type': 'application/json' },
       })
         // If post was successful, parse response and re-render workspace list
-        .then(resp => (resp.status === 201 ? loadWorkSpaces() : this.setState({ createFail: true })))
 
-        // .then(resp => (resp.status === 201 ? resp.json() : this.setState({ createFail: true })))
-        // .then((data) => { updateWorkSpaces(data); })
+        .then(resp => (resp.status === 201 ? resp.json() : this.setState({ createFail: true })))
+        .then((data) => { updateWorkSpaces(data); })
         .catch(console.error);
     }
   }
