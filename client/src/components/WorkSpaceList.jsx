@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import { Alert, Row, Col } from 'reactstrap';
+import { Nav, NavItem, Dropdown, DropdownItem, DropdownToggle, DropdownMenu, NavLink } from 'reactstrap';
+
 import PropTypes from 'prop-types';
 import WorkSpaceEntry from './WorkSpaceEntry.jsx';
+import WorkSpaceEntryDropdown from './WorkSpaceEntryDropDown.jsx';
+
 import CreateWorkSpace from './CreateWorkSpace.jsx';
 
 // Container for all workspaces
@@ -12,10 +16,12 @@ export default class WorkSpaceList extends Component {
       workSpaceQuery: '',
       // createFail usually happens if a workspace already exists
       createFail: false,
+      dropdownOpen: false,
     };
     this.handleFail = this.handleFail.bind(this);
     this.getWorkSpaceQuery = this.getWorkSpaceQuery.bind(this);
     this.createWorkSpace = this.createWorkSpace.bind(this);
+    this.toggle = this.toggle.bind(this);
   }
 
   // grabs the value from the input field
@@ -23,7 +29,13 @@ export default class WorkSpaceList extends Component {
     this.setState({ workSpaceQuery: query });
   }
 
-  // posts the query to the server that results in a success or failed creation
+  toggle() {
+    this.setState({
+      dropdownOpen: !this.state.dropdownOpen,
+    });
+  }
+
+  //posts the query to the server that results in a success or failed creation
   createWorkSpace(isPrivate = false) {
     const { updateWorkSpaces, loadWorkSpaces, currentUser } = this.props;
     console.log('updateWorkSpaces: ', updateWorkSpaces);
@@ -62,7 +74,9 @@ export default class WorkSpaceList extends Component {
             />
           </Col>
         </Row>
-        {workSpaces.map(workSpace => (
+        {workSpaces
+          .filter(ws => ws.is_member)
+          .map(workSpace => (
           <WorkSpaceEntry
             workSpace={workSpace}
             handleFail={() => this.handleFail}
@@ -73,6 +87,24 @@ export default class WorkSpaceList extends Component {
 
           />
         ))}
+        <Dropdown nav isOpen={this.state.dropdownOpen} toggle={this.toggle}>
+            <DropdownToggle nav caret>
+             Other Workspaces
+            </DropdownToggle>
+            <DropdownMenu>
+              {workSpaces.filter(ws => !ws.is_member).map(workSpace => (
+                <WorkSpaceEntryDropdown
+                  workSpace={workSpace}
+                  handleFail={() => this.handleFail}
+                  key={workSpace.id}
+                  changeCurrentWorkSpace={changeCurrentWorkSpace}
+                  currentWorkSpaceId={currentWorkSpaceId}
+                  currentUser={currentUser}
+                />
+              ))}
+            </DropdownMenu>
+        </Dropdown>
+
         <br />
         <br />
         {createFail ? <Alert color="danger"> Failed to create workspace </Alert> : undefined}
