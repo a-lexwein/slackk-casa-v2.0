@@ -35,8 +35,10 @@ export default class App extends React.Component {
     };
 
     this.timer = null;
-    
+
     this.updateWorkSpaces = this.updateWorkSpaces.bind(this);
+    this.loadWorkSpaces= this.loadWorkSpaces.bind(this);
+
     this.handleFileSubmit = this.handleFileSubmit.bind(this);
     this.handleFileChange = this.handleFileChange.bind(this);
   }
@@ -77,7 +79,7 @@ export default class App extends React.Component {
    }
    return post(url, formData, config)
  }
- 
+
   turnOffTyping() {
     sendTypingState({
       username: this.props.location.state.username,
@@ -87,7 +89,7 @@ export default class App extends React.Component {
     this.setState({ currentlyTyping: false });
   }
 
-  // Handle changes to current query value and currentlyTyping 
+  // Handle changes to current query value and currentlyTyping
   handleChange(event) {
     // clear any timers set reset currentlyTyping
     clearTimeout(this.timer);
@@ -149,7 +151,7 @@ export default class App extends React.Component {
     // update current workspace state for dropdown menu
     axios.get(`/workspaces/${id}/members`)
       .then(data => this.setState({ workspaceMembers: data.data }));
-      
+
     // inform server of workspace change
     const workSpaceData = {
       currentWorkSpaceId: id,
@@ -165,13 +167,13 @@ export default class App extends React.Component {
   // renders nav bar, body(which contains all message components other than input), and message input
   render() {
     const {
-      messages, query, workSpaces, currentWorkSpaceId, 
+      messages, query, workSpaces, currentWorkSpaceId,
       currentWorkSpaceName, workspaceMembers, typingUser
     } = this.state;
 
     const { username } = this.props.location.state;
 
-    const userTypingNotification = typingUser !== null ? 
+    const userTypingNotification = typingUser !== null ?
       <UserTypingNotification typingUser={typingUser} /> : ' ';
 
 
@@ -187,6 +189,7 @@ export default class App extends React.Component {
           messages={messages}
           workSpaces={workSpaces}
           updateWorkSpaces={this.updateWorkSpaces}
+          loadWorkSpaces={}
           changeCurrentWorkSpace={(id, name) => this.changeCurrentWorkSpace(id, name)}
           currentWorkSpaceId={currentWorkSpaceId}
           currentUser={username}

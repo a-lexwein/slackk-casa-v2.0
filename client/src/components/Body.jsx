@@ -23,6 +23,7 @@ export default class Body extends React.Component {
       workspaceMembers,
       updateWorkSpaces,
       typingUser,
+      loadWorkSpaces
     } = this.props;
 
 
@@ -36,6 +37,7 @@ export default class Body extends React.Component {
               changeCurrentWorkSpace={changeCurrentWorkSpace}
               currentWorkSpaceId={currentWorkSpaceId}
               currentUser={currentUser}
+              loadWorkSpaces={loadWorkSpaces}
             />
           </Col>
           <Col className="message-list-col" xs="10">
