@@ -47,8 +47,10 @@ export default class WorkSpaceList extends Component {
         headers: { 'content-type': 'application/json' },
       })
         // If post was successful, parse response and re-render workspace list
-        .then(resp => (resp.status === 201 ? resp.json() : this.setState({ createFail: true })))
-        .then((data) => { updateWorkSpaces(data); })
+        .then(resp => (resp.status === 201 ? loadWorkSpaces() : this.setState({ createFail: true })))
+
+        // .then(resp => (resp.status === 201 ? resp.json() : this.setState({ createFail: true })))
+        // .then((data) => { updateWorkSpaces(data); })
         .catch(console.error);
     }
   }
