@@ -22,7 +22,8 @@ export default class CreateWorkSpace extends React.Component {
   }
   //calls workspace creation then pops back down
   handleClick() {
-    this.props.createWorkSpace();
+    this.props.createWorkSpace(this.state.private);
+    this.setState({ private: false });
     this.closePopUp();
   }
 
@@ -31,6 +32,7 @@ export default class CreateWorkSpace extends React.Component {
     const target = event.target;
     event.preventDefault();
     this.props.getWorkSpaceQuery(event.target.value);
+
   }
 
   handleCheck() {
