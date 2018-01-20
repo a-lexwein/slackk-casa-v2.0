@@ -68,7 +68,6 @@ export default class CreateWorkSpace extends React.Component {
               name="private"
               type="checkbox"
               onChange={this.handleCheck}
-
             />
           </PopoverBody>
         </Popover>
