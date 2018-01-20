@@ -153,11 +153,17 @@ router.post('/workspaces', async (req, res) => {
     // create the new workspace
     await db.createWorkspace(name, req.body.private, req.body.user);
     // grab updated list of workspaces
-    workspaces = await db.getWorkspaces();
+
+    workspaces = await db.getWorkspaces(req.body.user);
+
+    console.log(workspaces)
+    console.log('name: ', name)
     // create active workspace object
     const createdId = workspaces.filter(workspace => workspace.name === name)[0].id;
+    console.log(createdId)
     createNewWorkSpaceObject(createdId);
     // send workspace list back to client
+    console.log('wsobj created')
     return res.status(201).json(workspaces);
   } catch (err) {
     return res.status(500).json(err.stack);
