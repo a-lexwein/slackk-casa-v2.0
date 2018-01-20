@@ -84,7 +84,7 @@ const createWorkspace = (name, isPrivate, user, dbName = `ws_${name[0]}${Date.no
     // run query to create messages table for workspace
     .then(data => client.query(data.replace('$1', dbName).replace('$1_pk', `${dbName}_pk`)));
 
-// pull list of workspaces from database
+// pull list of workspaces from database; optionally for a specific user
 // const getWorkspaces = (user) => client.query('SELECT * FROM workspaces').then(data => data.rows);
 const getWorkspaces = (user = '') => client.query(`
   SELECT
