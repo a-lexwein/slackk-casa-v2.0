@@ -150,6 +150,7 @@ router.post('/workspaces', async (req, res) => {
     ) {
       return res.status(400).json('workspace exists');
     }
+<<<<<<< HEAD
     // create the new workspace
     await db.createWorkspace(name, req.body.private);
     // grab updated list of workspaces
@@ -159,6 +160,11 @@ router.post('/workspaces', async (req, res) => {
     createNewWorkSpaceObject(createdId);
     // send workspace list back to client
     return res.status(201).json(workspaces);
+=======
+    console.log(req.body)
+    await db.createWorkspace(req.body.name, req.body.private, req.body.user);
+    return res.sendStatus(201);
+>>>>>>> creating group creates membership too
   } catch (err) {
     return res.status(500).json(err.stack);
   }

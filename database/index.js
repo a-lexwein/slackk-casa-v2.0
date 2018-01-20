@@ -68,9 +68,10 @@ const getPasswordHint = username =>
     .then(data => data.rows[0]);
 
 // creates a new workspace
-const createWorkspace = (name, isPrivate, dbName = `ws_${name[0]}${Date.now()}`) =>
+const createWorkspace = (name, isPrivate, user, dbName = `ws_${name[0]}${Date.now()}`) =>
   // add a new entry into workspaces table
   client.query('INSERT INTO workspaces (name, db_name, private) VALUES ($1, $2, $3) RETURNING *', [name, dbName, isPrivate])
+    .then(data => joinWorkspace(user, data.rows[0].id, 'add'))
     .then(() =>
     // read messages schema and insert workspace table name
       new Promise((resolve, reject) => {
