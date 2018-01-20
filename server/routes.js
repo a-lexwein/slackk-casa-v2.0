@@ -118,9 +118,10 @@ router.post('/recover', async (req, res) => {
     }
   ]
 */
-router.get('/workspaces', async (req, res) => {
+router.get('/workspaces/:user', async (req, res) => {
   try {
-    return res.status(200).json(await db.getWorkspaces());
+    const user = req.params.user || '';
+    return res.status(200).json(await db.getWorkspaces(user));
   } catch (err) {
     return res.status(500).json(err.stack);
   }

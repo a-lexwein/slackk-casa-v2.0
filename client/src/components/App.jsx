@@ -24,6 +24,7 @@ export default class App extends React.Component {
         },
       ],
       users: [],
+      workspaceMembers: [],
       workSpaces: [],
       file: null,
       query: '',
@@ -133,7 +134,7 @@ export default class App extends React.Component {
 
   // grabs all existing workspaces
   loadWorkSpaces() {
-    fetch('/workspaces')
+    fetch(`/workspaces/${this.props.location.state.username}`)
       .then(resp => resp.json())
       .then((workSpaces) => { this.updateWorkSpaces(workSpaces); })
       .catch(console.error);
