@@ -9,7 +9,10 @@ export default class CreateWorkSpace extends React.Component {
     this.toggle = this.toggle.bind(this);
     this.state = {
       popoverOpen: false,
+      private: false,
     };
+
+    this.handleCheck = this.handleCheck.bind(this);
   }
   //Changes the popout state
   toggle() {
@@ -25,8 +28,13 @@ export default class CreateWorkSpace extends React.Component {
 
   //grabs the input value
   handleChange(event) {
+    const target = event.target;
     event.preventDefault();
     this.props.getWorkSpaceQuery(event.target.value);
+  }
+
+  handleCheck() {
+    this.setState({ private: !this.state.private });
   }
 
   //Closes popup for sure
@@ -52,6 +60,14 @@ export default class CreateWorkSpace extends React.Component {
           <PopoverBody>
             <input type="text" placeholder="workspace name.." onChange={event => this.handleChange(event)} />
             <button onClick={() => this.handleClick()}> Add </button>
+            <div></div>
+            make group private	&nbsp;
+            <input
+              name="private"
+              type="checkbox"
+              onChange={this.handleCheck}
+
+            />
           </PopoverBody>
         </Popover>
       </div>

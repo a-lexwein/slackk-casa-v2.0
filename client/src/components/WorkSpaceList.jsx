@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Alert, Row, Col } from 'reactstrap';
+import PropTypes from 'prop-types';
 import WorkSpaceEntry from './WorkSpaceEntry.jsx';
 import CreateWorkSpace from './CreateWorkSpace.jsx';
-import PropTypes from 'prop-types';
 
 // Container for all workspaces
 export default class WorkSpaceList extends Component {
