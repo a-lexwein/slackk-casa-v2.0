@@ -150,7 +150,7 @@ router.post('/workspaces', async (req, res) => {
       return res.status(400).json('workspace exists');
     }
     // create the new workspace
-    await db.createWorkspace(name);
+    await db.createWorkspace(name, req.body.private);
     // grab updated list of workspaces
     workspaces = await db.getWorkspaces();
     // create active workspace object
