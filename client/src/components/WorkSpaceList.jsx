@@ -34,7 +34,6 @@ export default class WorkSpaceList extends Component {
       dropdownOpen: !this.state.dropdownOpen,
     });
   }
-
   //posts the query to the server that results in a success or failed creation
   createWorkSpace(isPrivate = false) {
     const { updateWorkSpaces, loadWorkSpaces, currentUser } = this.props;
