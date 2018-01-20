@@ -84,8 +84,22 @@ const createWorkspace = (name, isPrivate, dbName = `ws_${name[0]}${Date.now()}`)
     .then(data => client.query(data.replace('$1', dbName).replace('$1_pk', `${dbName}_pk`)));
 
 // pull list of workspaces from database
-const getWorkspaces = () => client.query('SELECT * FROM workspaces').then(data => data.rows);
-
+// const getWorkspaces = (user) => client.query('SELECT * FROM workspaces').then(data => data.rows);
+const getWorkspaces = (user = '') => client.query(`
+  SELECT
+    workspaces.id AS id,
+    workspaces.name AS name,
+    workspaces.db_name as db_name,
+    workspaces.private as private,
+    a.id is not null as is_member
+  FROM workspaces
+  LEFT JOIN
+  (SELECT * FROM workspacemembers
+  WHERE username = '${user}') as a
+  on workspaces.id = a.workspace_id
+  WHERE private = false
+    OR a.id is not null;
+  `).then(data => data.rows);
 // pull all emails from users table
 const getEmails = () => client.query('SELECT email FROM USERS')
   .then(data => data.rows);
