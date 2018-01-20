@@ -29,15 +29,16 @@ export default class WorkSpaceList extends Component {
     this.setState({ workSpaceQuery: query });
   }
 
+  // toggle whether the workspace dropdown menu is open
   toggle() {
     this.setState({
       dropdownOpen: !this.state.dropdownOpen,
     });
   }
+  
   //posts the query to the server that results in a success or failed creation
   createWorkSpace(isPrivate = false) {
     const { updateWorkSpaces, currentUser } = this.props;
-    console.log('updateWorkSpaces: ', updateWorkSpaces);
     let { workSpaceQuery, createFail } = this.state;
     this.setState({ createFail: false });
     if (workSpaceQuery.length > 0) {
@@ -47,16 +48,17 @@ export default class WorkSpaceList extends Component {
         headers: { 'content-type': 'application/json' },
       })
         // If post was successful, parse response and re-render workspace list
-
         .then(resp => (resp.status === 201 ? resp.json() : this.setState({ createFail: true })))
         .then((data) => { updateWorkSpaces(data); })
         .catch(console.error);
     }
   }
+  
   // helper for createWorkSpace
   handleFail() {
     this.setState({ createFail: false });
   }
+  
   // renders everything to do with workspaces, including creation
   render() {
     let { changeCurrentWorkSpace, currentWorkSpaceId, workSpaces, currentUser } = this.props;
@@ -112,6 +114,7 @@ export default class WorkSpaceList extends Component {
     );
   }
 }
+
 // required prop types
 WorkSpaceList.propTypes = {
   workSpaces: PropTypes.array,
